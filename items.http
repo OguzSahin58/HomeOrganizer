@@ -1,0 +1,16 @@
+GET http://localhost:5164/items
+
+###
+
+GET http://localhost:5164/items/4
+
+###
+
+POST http://localhost:5164/items
+Content-Type: application/json
+
+{
+  "name": "Cekic",
+  "description": "smash things",
+  "lastModifiedDate": "2024-06-01"
+}

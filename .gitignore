@@ -1,0 +1,51 @@
+# Build results
+[Bb]in/
+[Oo]bj/
+out/
+
+# Visual Studio and Rider
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# .NET tooling
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+coverage/
+artifacts/
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+project.lock.json
+project.assets.json
+
+# Local configuration and secrets
+.env
+.env.*
+*.Development.local.json
+appsettings.Local.json
+appsettings.*.Local.json
+
+# Logs and runtime files
+*.log
+logs/
+*.pid
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
+
+# OS files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
