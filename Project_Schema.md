@@ -6,12 +6,13 @@
 
 - Register and sign in.
 - Create their own home.
-- Create one or more floors.
 - Draw rooms in a 2D bird's-eye view.
 - Place predefined storage units such as wardrobes, cabinets, drawers, and shelves.
-- Add items to specific storage units.
+- Add items directly to specific storage units.
 - Search for an item and see its exact location.
-- Highlight the related room and storage unit on the 2D floor plan.
+- Highlight the related room and storage unit on the 2D home layout.
+
+Each home has a single 2D layout. The application does not model multiple levels.
 
 The first version should use a simple **2D top-down approach**.  
 A realistic 3D home designer is outside the initial project scope.
@@ -85,7 +86,7 @@ Do not begin with a complicated Clean Architecture solution containing many proj
 │ React + TypeScript Frontend      │
 │                                  │
 │ - Register / Login               │
-│ - Home and floor selection       │
+│ - Home selection                 │
 │ - 2D room editor                 │
 │ - Furniture placement            │
 │ - Item management                │
@@ -99,7 +100,6 @@ Do not begin with a complicated Clean Architecture solution containing many proj
 │                                  │
 │ - Authentication                 │
 │ - Home management                │
-│ - Floor management               │
 │ - Room management                │
 │ - Storage-unit management        │
 │ - Item management                │
@@ -109,11 +109,10 @@ Do not begin with a complicated Clean Architecture solution containing many proj
                  │ Entity Framework Core
                  ▼
 ┌──────────────────────────────────┐
-│ Microsoft SQL Server Database              │
+│ Microsoft SQL Server Database    │
 │                                  │
 │ - Users                          │
 │ - Homes                          │
-│ - Floors                         │
 │ - Rooms                          │
 │ - StorageUnits                   │
 │ - Items                          │
@@ -129,17 +128,15 @@ Register or Login
         ↓
 Create a Home
         ↓
-Create a Floor
-        ↓
 Draw Rooms
         ↓
 Place Cabinets or Wardrobes
         ↓
-Add Items
+Add Items Directly to Storage Units
         ↓
 Search for an Item
         ↓
-Open the Correct Floor
+Open the Correct Home
         ↓
 Highlight the Room and Storage Unit
 ```
@@ -149,11 +146,9 @@ Example:
 ```text
 User
 └── My Home
-    └── Ground Floor
-        └── Bedroom
-            └── Large Wardrobe
-                └── Top Drawer
-                    └── Passport
+    └── Bedroom
+        └── Large Wardrobe
+            └── Passport
 ```
 
 ---
@@ -228,22 +223,17 @@ ApplicationUser
     │
     └── Home
          │
-         └── Floor
+         └── Room
               │
-              └── Room
+              └── StorageUnit
                    │
-                   └── StorageUnit
-                        │
-                        └── Compartment
-                             │
-                             └── Item
+                   └── Item
 ```
 
 ### Relationship Summary
 
 - One user can own multiple homes.
-- One home can contain multiple floors.
-- One floor can contain multiple rooms.
+- One home can contain multiple rooms.
 - One room can contain multiple storage units.
 - One storage unit can contain multiple items.
 
@@ -277,25 +267,6 @@ public class Home
 
     public ApplicationUser User { get; set; } = null!;
 
-    public ICollection<Floor> Floors { get; set; } = [];
-}
-```
-
-### Floor
-
-```csharp
-public class Floor
-{
-    public int Id { get; set; }
-
-    public string Name { get; set; } = string.Empty;
-
-    public int LevelNumber { get; set; }
-
-    public int HomeId { get; set; }
-
-    public Home Home { get; set; } = null!;
-
     public ICollection<Room> Rooms { get; set; } = [];
 }
 ```
@@ -311,9 +282,9 @@ public class Room
 
     public string Name { get; set; } = string.Empty;
 
-    public int FloorId { get; set; }
+    public int HomeId { get; set; }
 
-    public Floor Floor { get; set; } = null!;
+    public Home Home { get; set; } = null!;
 
     public double PositionX { get; set; }
 
@@ -329,7 +300,7 @@ public class Room
 
 ### StorageUnit
 
-A storage unit represents a wardrobe, cabinet, shelf, drawer unit, or similar object.
+A storage unit represents a wardrobe, cabinet, shelf, drawer unit, box, or similar object.
 
 ```csharp
 public class StorageUnit
@@ -354,6 +325,7 @@ public class StorageUnit
 
     public double Rotation { get; set; }
 
+    public ICollection<Item> Items { get; set; } = [];
 }
 ```
 
@@ -371,23 +343,6 @@ public enum StorageUnitType
 }
 ```
 
-### Compartment
-
-```csharp
-public class Compartment
-{
-    public int Id { get; set; }
-
-    public string Name { get; set; } = string.Empty;
-
-    public int StorageUnitId { get; set; }
-
-    public StorageUnit StorageUnit { get; set; } = null!;
-
-    public ICollection<Item> Items { get; set; } = [];
-}
-```
-
 ### Item
 
 ```csharp
@@ -401,9 +356,9 @@ public class Item
 
     public int Quantity { get; set; } = 1;
 
-    public int CompartmentId { get; set; }
+    public int StorageUnitId { get; set; }
 
-    public Compartment Compartment { get; set; } = null!;
+    public StorageUnit StorageUnit { get; set; } = null!;
 }
 ```
 
@@ -416,7 +371,6 @@ The initial database should contain these tables:
 ```text
 AspNetUsers
 Homes
-Floors
 Rooms
 StorageUnits
 Items
@@ -425,11 +379,10 @@ Items
 ### Important Foreign Keys
 
 ```text
-Homes.UserId                  → AspNetUsers.Id
-Floors.HomeId                 → Homes.Id
-Rooms.FloorId                 → Floors.Id
-StorageUnits.RoomId           → Rooms.Id
-Items.StorageUnitId           → StorageUnits.Id
+Homes.UserId             → AspNetUsers.Id
+Rooms.HomeId             → Homes.Id
+StorageUnits.RoomId      → Rooms.Id
+Items.StorageUnitId      → StorageUnits.Id
 ```
 
 ---
@@ -444,7 +397,6 @@ HomeOrganizer/
     ├── Controllers/
     │   ├── AuthController.cs
     │   ├── HomesController.cs
-    │   ├── FloorsController.cs
     │   ├── RoomsController.cs
     │   ├── StorageUnitsController.cs
     │   ├── ItemsController.cs
@@ -456,7 +408,6 @@ HomeOrganizer/
     ├── DTOs/
     │   ├── Auth/
     │   ├── Homes/
-    │   ├── Floors/
     │   ├── Rooms/
     │   ├── StorageUnits/
     │   └── Items/
@@ -464,10 +415,8 @@ HomeOrganizer/
     ├── Entities/
     │   ├── ApplicationUser.cs
     │   ├── Home.cs
-    │   ├── Floor.cs
     │   ├── Room.cs
     │   ├── StorageUnit.cs
-    │   ├── Compartment.cs
     │   └── Item.cs
     │
     ├── Enums/
@@ -510,21 +459,11 @@ PUT    /api/homes/{homeId}
 DELETE /api/homes/{homeId}
 ```
 
-### Floors
-
-```text
-GET    /api/homes/{homeId}/floors
-POST   /api/homes/{homeId}/floors
-GET    /api/floors/{floorId}
-PUT    /api/floors/{floorId}
-DELETE /api/floors/{floorId}
-```
-
 ### Rooms
 
 ```text
-GET    /api/floors/{floorId}/rooms
-POST   /api/floors/{floorId}/rooms
+GET    /api/homes/{homeId}/rooms
+POST   /api/homes/{homeId}/rooms
 GET    /api/rooms/{roomId}
 PUT    /api/rooms/{roomId}
 DELETE /api/rooms/{roomId}
@@ -539,7 +478,6 @@ GET    /api/storage-units/{storageUnitId}
 PUT    /api/storage-units/{storageUnitId}
 DELETE /api/storage-units/{storageUnitId}
 ```
-
 
 ### Items
 
@@ -575,18 +513,15 @@ Entity Framework Core joins:
 Items
 StorageUnits
 Rooms
-Floors
 Homes
         ↓
 The API returns the item's complete location
         ↓
-React opens the correct floor
+React opens the correct home
         ↓
 React highlights the room
         ↓
 React highlights the storage unit
-        ↓
-The UI displays the compartment name
 ```
 
 Example API response:
@@ -598,14 +533,10 @@ Example API response:
   "quantity": 1,
   "homeId": 1,
   "homeName": "My Home",
-  "floorId": 4,
-  "floorName": "Ground Floor",
   "roomId": 15,
   "roomName": "Bedroom",
   "storageUnitId": 23,
   "storageUnitName": "Large Wardrobe",
-  "compartmentId": 31,
-  "compartmentName": "Top Drawer",
   "positionX": 420,
   "positionY": 180,
   "width": 120,
@@ -677,10 +608,8 @@ Example ownership chain:
 
 ```text
 Item
-→ Compartment
 → StorageUnit
 → Room
-→ Floor
 → Home
 → User
 ```
@@ -748,12 +677,12 @@ public class RoomResponse
 The backend should validate:
 
 - Home name cannot be empty.
-- Floor name cannot be empty.
 - Room width and height must be greater than zero.
 - Storage-unit width and height must be greater than zero.
 - Item name cannot be empty.
-- Item quantity cannot be negative.
+- Item quantity must be greater than zero.
 - The selected room must belong to the current user.
+- The selected storage unit must belong to the current user.
 - A storage unit should be placed inside its assigned room.
 - Search text should be trimmed before querying.
 
@@ -791,7 +720,7 @@ if (request.Width <= 0 || request.Height <= 0)
 Example commands:
 
 ```bash
-dotnet add package Npgsql.EntityFrameworkCore.Microsoft SQL Server
+dotnet add package Microsoft.EntityFrameworkCore.SqlServer
 dotnet add package Microsoft.EntityFrameworkCore.Design
 dotnet tool install --global dotnet-ef
 ```
@@ -814,21 +743,20 @@ Implement:
 Initially, authentication may be temporarily replaced with a test user ID while learning CRUD.  
 Remove that temporary approach before completing the application.
 
-### Phase 4 — Floors and Rooms
+### Phase 4 — Rooms
 
 Implement:
 
-- Create floors
-- Create rectangular rooms
-- Store room coordinates and dimensions
-- Update room layout
-- Delete rooms
+- Create rectangular rooms directly inside a home.
+- Store room coordinates and dimensions.
+- Update room layout.
+- Delete rooms.
 
 ### Phase 5 — Basic React Frontend
 
 - Create the React application.
 - Connect React to the API.
-- Display homes and floors.
+- Display homes.
 - Load room layout data.
 - Render rooms as rectangles.
 
@@ -842,16 +770,16 @@ Implement:
 
 ### Phase 7 — Items
 
-- Add items to storage units.
+- Add items directly to storage units.
 - Edit item details.
 - Delete items.
-- Display cabinet contents in a panel or modal.
+- Display storage-unit contents in a panel or modal.
 
 ### Phase 8 — Search
 
 - Search items by name.
 - Return complete location information.
-- Open the correct floor.
+- Open the correct home.
 - Highlight the correct room.
 - Highlight the correct storage unit.
 
@@ -882,11 +810,10 @@ The first complete version should support only:
 - User registration
 - User login
 - Create one or more homes
-- Create floors
-- Add rectangular rooms
+- Add rectangular rooms directly to a home
 - Move and resize rooms
 - Place predefined cabinets and wardrobes
-- Add items
+- Add items directly to storage units
 - Search items
 - Highlight the correct room and storage unit
 
@@ -998,7 +925,7 @@ ASP.NET Core Web API
 + React Konva
 ```
 
-Begin with a single controller-based API project and a simple rectangular 2D floor-plan model.
+Begin with a single controller-based API project and a simple rectangular 2D home-layout model.
 
 The most important first objective is not visual quality. It is proving that this complete flow works:
 
@@ -1010,3 +937,4 @@ Create data
 → Search data
 → Display its location
 ```
+
