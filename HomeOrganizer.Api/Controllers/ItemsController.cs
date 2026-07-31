@@ -30,6 +30,18 @@ namespace HomeOrganizer.Api
         [HttpPost]
         public ActionResult<ItemDto> CreateItem(CreateItemDto newItem)
         {
+            if (string.IsNullOrWhiteSpace(newItem.Name))
+            {
+                return BadRequest("Name is required.");
+            }
+            if (string.IsNullOrWhiteSpace(newItem.Description))
+            {
+                return BadRequest("Description is required.");
+            }
+            if (newItem.LastModifiedDate > DateOnly.FromDateTime(DateTime.Now))
+            {
+                return BadRequest("LastModifiedDate cannot be in the future.");
+            }
             ItemDto item = new(
                 Items.Count + 1,
                 newItem.Name,
