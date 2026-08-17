@@ -71,7 +71,7 @@ public class HomesController : ControllerBase
     // PUT: api/homes
     //
     [HttpPut("{id}")]
-    public async Task<ActionResult<HomeDto>> UpdateHome(int id, HomeDto home)
+    public async Task<ActionResult<HomeDto>> UpdateHome(int id, UpdateHomeDto home)
     {
         if (string.IsNullOrWhiteSpace(home.Name))
         {
