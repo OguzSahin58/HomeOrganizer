@@ -18,18 +18,11 @@ public class RoomsController : ControllerBase
     }
 
     //
-    // GET: /homes/{homeId}/rooms
+    // GET: api/homes/{homeId}/rooms
     //
     [HttpGet]
     public async Task<ActionResult<List<RoomDto>>> GetRooms(int homeId)
     {
-        var homeExists = await dbContext.Homes.AnyAsync(home => home.Id == homeId);
-
-        if (!homeExists)
-        {
-            return NotFound("Home not found.");
-        }
-
         var rooms = await dbContext.Rooms
             .Where(room => room.HomeId == homeId)
             .Select(room => new RoomDto(room.Id, room.HomeId, room.Name, room.PositionX, room.PositionY, room.Width, room.Height))
@@ -39,28 +32,17 @@ public class RoomsController : ControllerBase
     }
 
     //
-    // GET: /homes/{homeId}/rooms/{roomId}
-    //
-    [HttpGet("{roomId}")]
-    public async Task<ActionResult<RoomDto>> GetRoom(int homeId, int roomId)
-    {
-        var room = await dbContext.Rooms
-            .FirstOrDefaultAsync(room => room.Id == roomId && room.HomeId == homeId);
-
-        if (room is null)
-        {
-            return NotFound();
-        }
-
-        return Ok(new RoomDto(room.Id, room.HomeId, room.Name, room.PositionX, room.PositionY, room.Width, room.Height));
-    }
-
-    //
-    // POST: /homes/{homeId}/rooms
+    // POST: api/homes/{homeId}/rooms
     //
     [HttpPost]
     public async Task<ActionResult<RoomDto>> CreateRoom(int homeId, CreateRoomDto room)
     {
+        var homeExists = await dbContext.Homes.AnyAsync(home => home.Id == homeId);
+
+        if (!homeExists)
+        {
+            return NotFound("Home not found.");
+        }
         if (string.IsNullOrWhiteSpace(room.Name))
         {
             return BadRequest("Name is required.");
@@ -68,13 +50,6 @@ public class RoomsController : ControllerBase
         if (room.Width <= 0 || room.Height <= 0)
         {
             return BadRequest("Width and height must be greater than zero.");
-        }
-
-        var homeExists = await dbContext.Homes.AnyAsync(home => home.Id == homeId);
-
-        if (!homeExists)
-        {
-            return NotFound("Home not found.");
         }
 
         var newRoom = new Room
@@ -100,11 +75,11 @@ public class RoomsController : ControllerBase
         newRoom.Height
         );
 
-        return CreatedAtAction(nameof(GetRoom), new { homeId = homeId, roomId = createdRoomDto.Id }, createdRoomDto);
+        return CreatedAtAction(nameof(GetRooms), new { homeId = homeId }, createdRoomDto);
     }
 
     //
-    // PUT: /homes/{homeId}/rooms/{roomId}
+    // PUT: api/homes/{homeId}/rooms/{roomId}
     //
     [HttpPut("{roomId}")]
     public async Task<ActionResult<RoomDto>> UpdateRoom(int homeId, int roomId, UpdateRoomDto room)
@@ -138,7 +113,7 @@ public class RoomsController : ControllerBase
     }
 
     //
-    // DELETE: /homes/{homeId}/rooms/{roomId}
+    // DELETE: api/homes/{homeId}/rooms/{roomId}
     //
     [HttpDelete("{roomId}")]
     public async Task<IActionResult> DeleteRoom(int homeId, int roomId)
