@@ -2,7 +2,7 @@ namespace HomeOrganizer.Api;
 
 using System.ComponentModel.DataAnnotations;
 
-public record CreateRoomDto
+public record class UpdateRoomDto
 (
     [Required] string Name,
     [Required] int PositionX,

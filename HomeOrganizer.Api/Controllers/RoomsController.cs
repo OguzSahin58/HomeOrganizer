@@ -41,6 +41,10 @@ public class RoomsController : ControllerBase
         {
             return BadRequest("Name is required.");
         }
+        if (room.Width <= 0 || room.Height <= 0)
+        {
+            return BadRequest("Width and height must be greater than zero.");
+        }
 
         var newRoom = new Room
         {
@@ -58,5 +62,59 @@ public class RoomsController : ControllerBase
         var createdRoomDto = new RoomDto(newRoom.Id, newRoom.HomeId, newRoom.Name, newRoom.PositionX, newRoom.PositionY, newRoom.Width, newRoom.Height);
 
         return CreatedAtAction(nameof(GetRooms), new { homeId = homeId }, createdRoomDto);
+    }
+
+    //
+    // PUT: api/homes/{homeId}/rooms/{roomId}
+    //
+    [HttpPut("{roomId}")]
+    public async Task<ActionResult<RoomDto>> UpdateRoom(int homeId, int roomId, UpdateRoomDto room)
+    {
+        if (string.IsNullOrWhiteSpace(room.Name))
+        {
+            return BadRequest("Name is required.");
+        }
+        if (room.Width <= 0 || room.Height <= 0)
+        {
+            return BadRequest("Width and height must be greater than zero.");
+        }
+
+        var existingRoom = await dbContext.Rooms
+            .FirstOrDefaultAsync(room => room.Id == roomId && room.HomeId == homeId);
+
+        if (existingRoom is null)
+        {
+            return NotFound();
+        }
+
+        existingRoom.Name = room.Name;
+        existingRoom.PositionX = room.PositionX;
+        existingRoom.PositionY = room.PositionY;
+        existingRoom.Width = room.Width;
+        existingRoom.Height = room.Height;
+
+        await dbContext.SaveChangesAsync();
+
+        return Ok(new RoomDto(existingRoom.Id, existingRoom.HomeId, existingRoom.Name, existingRoom.PositionX, existingRoom.PositionY, existingRoom.Width, existingRoom.Height));
+    }
+
+    //
+    // DELETE: api/homes/{homeId}/rooms/{roomId}
+    //
+    [HttpDelete("{roomId}")]
+    public async Task<IActionResult> DeleteRoom(int homeId, int roomId)
+    {
+        var room = await dbContext.Rooms
+            .FirstOrDefaultAsync(room => room.Id == roomId && room.HomeId == homeId);
+
+        if (room is null)
+        {
+            return NotFound();
+        }
+
+        dbContext.Rooms.Remove(room);
+        await dbContext.SaveChangesAsync();
+
+        return NoContent();
     }
 }
