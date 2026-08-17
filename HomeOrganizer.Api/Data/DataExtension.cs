@@ -40,6 +40,16 @@ public static class DataExtension
                 context.SaveChanges();
             }
             
+            if(!context.Set<Room>().Any())
+            {
+                context.Set<Room>().AddRange(
+                    new Room { Id = 1, HomeId = 1, Name = "Living Room", PositionX = 0, PositionY = 0, Width = 500, Height = 400 },
+                    new Room { Id = 2, HomeId = 1, Name = "Kitchen", PositionX = 500, PositionY = 0, Width = 300, Height = 400 },
+                    new Room { Id = 3, HomeId = 2, Name = "Bedroom", PositionX = 0, PositionY = 0, Width = 400, Height = 300 },
+                    new Room { Id = 4, HomeId = 2, Name = "Bathroom", PositionX = 400, PositionY = 0, Width = 200, Height = 300 }
+                );
+                context.SaveChanges();
+            }   
             
         })
 );
