@@ -17,7 +17,7 @@ public class HomesController : ControllerBase
     }
 
     //
-    // GET: api/homes
+    // GET: /homes
     //
     [HttpGet]
     public async Task<ActionResult<List<HomeDto>>> GetHomes()
@@ -43,7 +43,7 @@ public class HomesController : ControllerBase
     }
 
     //
-    // POST: api/homes
+    // POST: /homes
     //
     [HttpPost]
     public async Task<ActionResult<HomeDto>> CreateHome(CreateHomeDto home)
@@ -68,7 +68,7 @@ public class HomesController : ControllerBase
     }
 
     //
-    // PUT: api/homes
+    // PUT: /homes/{id}
     //
     [HttpPut("{id}")]
     public async Task<ActionResult<HomeDto>> UpdateHome(int id, UpdateHomeDto home)
@@ -94,7 +94,7 @@ public class HomesController : ControllerBase
     }
 
     //
-    // DELETE: api/homes
+    // DELETE: /homes/{id}
     //
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteHome(int id)

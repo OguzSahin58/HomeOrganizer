@@ -1,4 +1,5 @@
 using HomeOrganizer.Api.Data;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using HomeOrganizer.Api.Entities;
 
@@ -16,21 +17,27 @@ namespace HomeOrganizer.Api
         this.dbContext = dbContext;
     }
         [HttpGet]
-        public ActionResult<IEnumerable<ItemDto>> GetItems()
+        public async Task<ActionResult<List<ItemDto>>> GetItems()
         {
-            return Ok(dbContext.Items);
+            var items = await dbContext.Items
+                .Select(item => new ItemDto(item.Id, item.Name, item.Description, item.LastModifiedDate))
+                .ToListAsync();
+
+            return Ok(items);
         }
 
         [HttpGet("{id}")]
-        public ActionResult<ItemDto> GetItem(int id)
+        public async Task<ActionResult<ItemDto>> GetItem(int id)
         {
-            var item = dbContext.Items.FirstOrDefault(i => i.Id == id);
+            var item = await dbContext.Items.FirstOrDefaultAsync(i => i.Id == id);
 
-            return item is not null ? Ok(item) : NotFound();
+            return item is not null
+                ? Ok(new ItemDto(item.Id, item.Name, item.Description, item.LastModifiedDate))
+                : NotFound();
         }
 
         [HttpPost]
-        public ActionResult<ItemDto> CreateItem(CreateItemDto newItem)
+        public async Task<ActionResult<ItemDto>> CreateItem(CreateItemDto newItem)
         {
             if (string.IsNullOrWhiteSpace(newItem.Name))
             {
@@ -52,9 +59,11 @@ namespace HomeOrganizer.Api
             };
 
             dbContext.Add(newItemInstance);
-            dbContext.SaveChanges();
+            await dbContext.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetItem), new { id = newItemInstance.Id }, newItemInstance);
+            var itemDto = new ItemDto(newItemInstance.Id, newItemInstance.Name, newItemInstance.Description, newItemInstance.LastModifiedDate);
+
+            return CreatedAtAction(nameof(GetItem), new { id = itemDto.Id }, itemDto);
         }
     }
 }
