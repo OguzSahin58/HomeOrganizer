@@ -1,4 +1,5 @@
 using HomeOrganizer.Api.Entities;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace HomeOrganizer.Api.Data;
@@ -11,4 +12,5 @@ public class ApplicationDbContext : DbContext
     }
 
     public DbSet<Home> Homes => Set<Home>();
+    public DbSet<Item> Items => Set<Item>();
 }
