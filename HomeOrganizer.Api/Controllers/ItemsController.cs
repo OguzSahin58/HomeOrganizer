@@ -1,4 +1,6 @@
+using HomeOrganizer.Api.Data;
 using Microsoft.AspNetCore.Mvc;
+using HomeOrganizer.Api.Entities;
 
 namespace HomeOrganizer.Api
 {
@@ -6,23 +8,23 @@ namespace HomeOrganizer.Api
     [ApiController]
     public class ItemsController : ControllerBase
     {
-        private static readonly List<ItemDto> Items = new()
-        {
-            new ItemDto(1, "Bavul", "Item container", DateOnly.FromDateTime(DateTime.Now)),
-            new ItemDto(2, "Canta", "Item for carrying belongings", DateOnly.FromDateTime(DateTime.Now)),
-            new ItemDto(3, "Ayakkabi", "Footwear", DateOnly.FromDateTime(DateTime.Now))
-        };
+        
+        private readonly ApplicationDbContext dbContext;
 
+        public ItemsController(ApplicationDbContext dbContext)
+    {
+        this.dbContext = dbContext;
+    }
         [HttpGet]
         public ActionResult<IEnumerable<ItemDto>> GetItems()
         {
-            return Ok(Items);
+            return Ok(dbContext.Items);
         }
 
         [HttpGet("{id}")]
         public ActionResult<ItemDto> GetItem(int id)
         {
-            var item = Items.Find(i => i.Id == id);
+            var item = dbContext.Items.FirstOrDefault(i => i.Id == id);
 
             return item is not null ? Ok(item) : NotFound();
         }
@@ -42,16 +44,17 @@ namespace HomeOrganizer.Api
             {
                 return BadRequest("LastModifiedDate cannot be in the future.");
             }
-            ItemDto item = new(
-                Items.Count + 1,
-                newItem.Name,
-                newItem.Description,
-                newItem.LastModifiedDate
-            );
+            var newItemInstance = new Item
+            {
+                Name = newItem.Name,
+                Description = newItem.Description,
+                LastModifiedDate = newItem.LastModifiedDate
+            };
 
-            Items.Add(item);
+            dbContext.Add(newItemInstance);
+            dbContext.SaveChanges();
 
-            return CreatedAtAction(nameof(GetItem), new { id = item.Id }, item);
+            return CreatedAtAction(nameof(GetItem), new { id = newItemInstance.Id }, newItemInstance);
         }
     }
 }

@@ -40,7 +40,7 @@ public class HomesController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<HomeDto>> CreateHome(HomeDto home)
+    public async Task<ActionResult<HomeDto>> CreateHome(CreateHomeDto home)
     {
         if (string.IsNullOrWhiteSpace(home.Name))
         {
