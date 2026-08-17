@@ -51,7 +51,7 @@ namespace HomeOrganizer.Api
 
             Items.Add(item);
 
-            return Created($"/items/{item.Id}", item);
+            return CreatedAtAction(nameof(GetItem), new { id = item.Id }, item);
         }
     }
 }
