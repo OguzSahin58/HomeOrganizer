@@ -20,7 +20,7 @@ public class HomesController : ControllerBase
     public async Task<ActionResult<List<HomeDto>>> GetHomes()
     {
         var homes = await dbContext.Homes
-            .Select(home => new HomeDto(home.Id, home.Name, string.Empty))
+            .Select(home => new HomeDto(home.Id, home.Name, home.Description))
             .ToListAsync();
 
         return Ok(homes);
@@ -36,7 +36,7 @@ public class HomesController : ControllerBase
             return NotFound();
         }
 
-        return Ok(new HomeDto(home.Id, home.Name, string.Empty));
+        return Ok(new HomeDto(home.Id, home.Name, home.Description));
     }
 
     [HttpPost]
@@ -49,13 +49,14 @@ public class HomesController : ControllerBase
 
         var newHome = new Home
         {
-            Name = home.Name
+            Name = home.Name,
+            Description = home.Description
         };
 
         dbContext.Homes.Add(newHome);
         await dbContext.SaveChangesAsync();
 
-        var homeDto = new HomeDto(newHome.Id, newHome.Name, string.Empty);
+        var homeDto = new HomeDto(newHome.Id, newHome.Name, newHome.Description);
 
         return CreatedAtAction(nameof(GetHome), new { id = homeDto.Id }, homeDto);
     }
@@ -76,10 +77,11 @@ public class HomesController : ControllerBase
         }
 
         existingHome.Name = home.Name;
+        existingHome.Description = home.Description;
 
         await dbContext.SaveChangesAsync();
 
-        return Ok(new HomeDto(existingHome.Id, existingHome.Name, string.Empty));
+        return Ok(new HomeDto(existingHome.Id, existingHome.Name, existingHome.Description));
     }
 
     [HttpDelete("{id}")]
