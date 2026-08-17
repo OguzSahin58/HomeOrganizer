@@ -10,7 +10,39 @@ POST http://localhost:5164/items
 Content-Type: application/json
 
 {
-  "name": "Cekic",
+  "name": "cekic",
   "description": "smash things",
-  "lastModifiedDate": "2024-06-01"
+  "lastModifiedDate": "2026-06-01"
 }
+
+###
+GET http://localhost:5164/homes
+
+###
+
+GET http://localhost:5164/homes/4
+
+###
+
+POST http://localhost:5164/homes
+Content-Type: application/json
+
+{
+  "name": "Bolu",
+  "description": "A cozy place to live"
+}
+
+###
+
+PUT http://localhost:5164/homes/1
+Content-Type: application/json
+
+{
+  "id": 1,
+  "name": "Updated Home",
+  "description": ""
+}
+
+###
+
+DELETE http://localhost:5164/homes/1
