@@ -16,6 +16,9 @@ public class HomesController : ControllerBase
         this.dbContext = dbContext;
     }
 
+    //
+    // GET: api/homes
+    //
     [HttpGet]
     public async Task<ActionResult<List<HomeDto>>> GetHomes()
     {
@@ -39,6 +42,9 @@ public class HomesController : ControllerBase
         return Ok(new HomeDto(home.Id, home.Name, home.Description));
     }
 
+    //
+    // POST: api/homes
+    //
     [HttpPost]
     public async Task<ActionResult<HomeDto>> CreateHome(CreateHomeDto home)
     {
@@ -61,6 +67,9 @@ public class HomesController : ControllerBase
         return CreatedAtAction(nameof(GetHome), new { id = homeDto.Id }, homeDto);
     }
 
+    //
+    // PUT: api/homes
+    //
     [HttpPut("{id}")]
     public async Task<ActionResult<HomeDto>> UpdateHome(int id, HomeDto home)
     {
@@ -84,6 +93,9 @@ public class HomesController : ControllerBase
         return Ok(new HomeDto(existingHome.Id, existingHome.Name, existingHome.Description));
     }
 
+    //
+    // DELETE: api/homes
+    //
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteHome(int id)
     {
