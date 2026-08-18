@@ -49,7 +49,17 @@ public static class DataExtension
                     new Room { Id = 4, HomeId = 2, Name = "Bathroom", PositionX = 400, PositionY = 0, Width = 200, Height = 300 }
                 );
                 context.SaveChanges();
-            }   
+            }
+            if (!context.Set<StorageUnit>().Any())
+            {
+                context.Set<StorageUnit>().AddRange(
+                    new StorageUnit { Id = 1, RoomId = 1, Name = "Box", Type = Enums.StorageUnitType.Box, PositionX = 50, PositionY = 50, Width = 100, Height = 200 },
+                    new StorageUnit { Id = 2, RoomId = 1, Name = "Cabinet", Type = Enums.StorageUnitType.Cabinet, PositionX = 200, PositionY = 50, Width = 150, Height = 100 },
+                    new StorageUnit { Id = 3, RoomId = 2, Name = "DrawerUnit", Type = Enums.StorageUnitType.DrawerUnit, PositionX = 50, PositionY = 50, Width = 200, Height = 300 },
+                    new StorageUnit { Id = 4, RoomId = 2, Name = "Shelf", Type = Enums.StorageUnitType.Shelf, PositionX = 300, PositionY = 50, Width = 100, Height = 200 }
+                );
+                context.SaveChanges();
+            }
             
         })
 );

@@ -75,3 +75,68 @@ Content-Type: application/json
 }
 
 ###
+
+############## STORAGE UNITS ###########################
+
+### Home validation: should return 404 "Home not found."
+POST http://localhost:5164/homes/9999/rooms/1/storage-units
+Content-Type: application/json
+
+{
+  "name": "Bedroom Wardrobe",
+  "type": "Wardrobe",
+  "positionX": 10,
+  "positionY": 20,
+  "width": 120,
+  "height": 220
+}
+
+###
+
+### Room validation: should return 404 "Room not found."
+### Use a real home id with a room id that does not belong to that home.
+POST http://localhost:5164/homes/1/rooms/9999/storage-units
+Content-Type: application/json
+
+{
+  "name": "Bedroom Wardrobe",
+  "type": "Wardrobe",
+  "positionX": 10,
+  "positionY": 20,
+  "width": 120,
+  "height": 220
+}
+
+###
+
+### Name validation: should return 400 "Name is required."
+### Use real home and room ids.
+POST http://localhost:5164/homes/1/rooms/1/storage-units
+Content-Type: application/json
+
+{
+  "name": "",
+  "type": "Wardrobe",
+  "positionX": 10,
+  "positionY": 20,
+  "width": 120,
+  "height": 220
+}
+
+###
+
+### Width/height validation: should return 400 "Width and height must be greater than zero."
+### Use real home and room ids.
+POST http://localhost:5164/homes/1/rooms/1/storage-units
+Content-Type: application/json
+
+{
+  "name": "Bedroom Wardrobe",
+  "type": "Wardrobe",
+  "positionX": 10,
+  "positionY": 20,
+  "width": 0,
+  "height": 220
+}
+
+###
