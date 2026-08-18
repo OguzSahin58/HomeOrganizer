@@ -7,6 +7,6 @@ public record  CreateItemDto
 (
     [Required] string Name,
     [Required] string Description, 
-    [Required] DateOnly LastModifiedDate
+    [Required] int Quantity
 
 );

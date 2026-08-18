@@ -6,7 +6,8 @@ namespace HomeOrganizer.Api;
 public record class ItemDto
 (
     int Id,
+    int StorageUnitId,
     string Name,
     string Description,
-    DateOnly LastModifiedDate
+    int Quantity
 );

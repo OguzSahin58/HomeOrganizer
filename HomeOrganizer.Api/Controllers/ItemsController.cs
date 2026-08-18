@@ -1,69 +1,140 @@
 using HomeOrganizer.Api.Data;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Mvc;
 using HomeOrganizer.Api.Entities;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
-namespace HomeOrganizer.Api
+namespace HomeOrganizer.Api;
+
+[Route("homes/{homeId}/rooms/{roomId}/storage-units/{storageUnitId}/items")]
+[ApiController]
+public class ItemsController : ControllerBase
 {
-    [Route("items")]
-    [ApiController]
-    public class ItemsController : ControllerBase
-    {
-        
-        private readonly ApplicationDbContext dbContext;
+    private readonly ApplicationDbContext dbContext;
 
-        public ItemsController(ApplicationDbContext dbContext)
+    public ItemsController(ApplicationDbContext dbContext)
     {
         this.dbContext = dbContext;
     }
-        [HttpGet]
-        public async Task<ActionResult<List<ItemDto>>> GetItems()
-        {
-            var items = await dbContext.Items
-                .Select(item => new ItemDto(item.Id, item.Name, item.Description, item.LastModifiedDate))
-                .ToListAsync();
 
-            return Ok(items);
+    // GET: /homes/{homeId}/rooms/{roomId}/storage-units/{storageUnitId}/items
+    [HttpGet]
+    public async Task<ActionResult<List<ItemDto>>> GetItems(int homeId, int roomId, int storageUnitId)
+    {
+        var storageUnitExists = await StorageUnitExists(homeId, roomId, storageUnitId);
+
+        if (!storageUnitExists)
+        {
+            return NotFound("Storage unit not found.");
         }
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<ItemDto>> GetItem(int id)
-        {
-            var item = await dbContext.Items.FirstOrDefaultAsync(i => i.Id == id);
+        var items = await dbContext.Items
+            .Where(item => item.StorageUnitId == storageUnitId)
+            .Select(item => new ItemDto(item.Id, item.StorageUnitId, item.Name, item.Description, item.Quantity))
+            .ToListAsync();
 
-            return item is not null
-                ? Ok(new ItemDto(item.Id, item.Name, item.Description, item.LastModifiedDate))
-                : NotFound();
+        return Ok(items);
+    }
+
+    // POST: /homes/{homeId}/rooms/{roomId}/storage-units/{storageUnitId}/items
+    [HttpPost]
+    public async Task<ActionResult<ItemDto>> CreateItem(int homeId, int roomId, int storageUnitId, CreateItemDto newItem)
+    {
+        if (string.IsNullOrWhiteSpace(newItem.Name))
+        {
+            return BadRequest("Name is required.");
+        }
+        if (newItem.Quantity <= 0)
+        {
+            return BadRequest("Quantity must be greater than zero.");
         }
 
-        [HttpPost]
-        public async Task<ActionResult<ItemDto>> CreateItem(CreateItemDto newItem)
+        var storageUnitExists = await StorageUnitExists(homeId, roomId, storageUnitId);
+
+        if (!storageUnitExists)
         {
-            if (string.IsNullOrWhiteSpace(newItem.Name))
-            {
-                return BadRequest("Name is required.");
-            }
-            if (string.IsNullOrWhiteSpace(newItem.Description))
-            {
-                return BadRequest("Description is required.");
-            }
-            if (newItem.LastModifiedDate > DateOnly.FromDateTime(DateTime.Now))
-            {
-                return BadRequest("LastModifiedDate cannot be in the future.");
-            }
-            var newItemInstance = new Item
-            {
-                Name = newItem.Name,
-                Description = newItem.Description,
-                LastModifiedDate = newItem.LastModifiedDate
-            };
-
-            dbContext.Add(newItemInstance);
-            await dbContext.SaveChangesAsync();
-
-            var itemDto = new ItemDto(newItemInstance.Id, newItemInstance.Name, newItemInstance.Description, newItemInstance.LastModifiedDate);
-
-            return CreatedAtAction(nameof(GetItem), new { id = itemDto.Id }, itemDto);
+            return NotFound("Storage unit not found.");
         }
+
+        var item = new Item
+        {
+            StorageUnitId = storageUnitId,
+            Name = newItem.Name,
+            Description = newItem.Description,
+            Quantity = newItem.Quantity
+        };
+
+        dbContext.Items.Add(item);
+        await dbContext.SaveChangesAsync();
+
+        var itemDto = new ItemDto(item.Id, item.StorageUnitId, item.Name, item.Description, item.Quantity);
+
+        return CreatedAtAction(nameof(GetItem), new { itemId = itemDto.Id }, itemDto);
+    }
+
+    // GET: /items/{itemId}
+    [HttpGet("/items/{itemId}")]
+    public async Task<ActionResult<ItemDto>> GetItem(int itemId)
+    {
+        var item = await dbContext.Items
+            .Where(item => item.Id == itemId)
+            .Select(item => new ItemDto(item.Id, item.StorageUnitId, item.Name, item.Description, item.Quantity))
+            .FirstOrDefaultAsync();
+
+        return item is not null ? Ok(item) : NotFound();
+    }
+
+    // PUT: /items/{itemId}
+    [HttpPut("/items/{itemId}")]
+    public async Task<ActionResult<ItemDto>> UpdateItem(int itemId, UpdateItemDto updatedItem)
+    {
+        if (string.IsNullOrWhiteSpace(updatedItem.Name))
+        {
+            return BadRequest("Name is required.");
+        }
+        if (updatedItem.Quantity <= 0)
+        {
+            return BadRequest("Quantity must be greater than zero.");
+        }
+
+        var item = await dbContext.Items.FindAsync(itemId);
+
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        item.Name = updatedItem.Name;
+        item.Description = updatedItem.Description;
+        item.Quantity = updatedItem.Quantity;
+
+        await dbContext.SaveChangesAsync();
+
+        return Ok(new ItemDto(item.Id, item.StorageUnitId, item.Name, item.Description, item.Quantity));
+    }
+
+    // DELETE: /items/{itemId}
+    [HttpDelete("/items/{itemId}")]
+    public async Task<IActionResult> DeleteItem(int itemId)
+    {
+        var item = await dbContext.Items.FindAsync(itemId);
+
+        if (item is null)
+        {
+            return NotFound();
+        }
+
+        dbContext.Items.Remove(item);
+        await dbContext.SaveChangesAsync();
+
+        return NoContent();
+    }
+
+    private async Task<bool> StorageUnitExists(int homeId, int roomId, int storageUnitId)
+    {
+        return await dbContext.StorageUnits
+            .AnyAsync(storageUnit =>
+                storageUnit.Id == storageUnitId &&
+                storageUnit.RoomId == roomId &&
+                storageUnit.Room.HomeId == homeId);
     }
 }

@@ -23,4 +23,5 @@ public class StorageUnit
 
     public int Height { get; set; }
 
+    public List<Item> Items { get; set; } = [];
 }

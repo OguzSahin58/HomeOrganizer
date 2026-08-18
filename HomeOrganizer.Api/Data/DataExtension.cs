@@ -29,17 +29,6 @@ public static class DataExtension
                 );
                 context.SaveChanges();
             }
-            if(!context.Set<Item>().Any())
-            {
-                context.Set<Item>().AddRange(
-                    new Item { Id = 1, Name = "Bavul", Description = "Item container", LastModifiedDate = DateOnly.FromDateTime(DateTime.Now)},
-                    new Item { Id = 2, Name = "Canta", Description = "Item container", LastModifiedDate = DateOnly.FromDateTime(DateTime.Now)},
-                    new Item { Id = 3, Name = "Ayakkabi", Description = "Item container", LastModifiedDate = DateOnly.FromDateTime(DateTime.Now)},
-                    new Item { Id = 4, Name = "Sapka", Description = "Item container", LastModifiedDate = DateOnly.FromDateTime(DateTime.Now)}
-                );
-                context.SaveChanges();
-            }
-            
             if(!context.Set<Room>().Any())
             {
                 context.Set<Room>().AddRange(
@@ -57,6 +46,16 @@ public static class DataExtension
                     new StorageUnit { Id = 2, RoomId = 1, Name = "Cabinet", Type = Enums.StorageUnitType.Cabinet, PositionX = 200, PositionY = 50, Width = 150, Height = 100 },
                     new StorageUnit { Id = 3, RoomId = 2, Name = "DrawerUnit", Type = Enums.StorageUnitType.DrawerUnit, PositionX = 50, PositionY = 50, Width = 200, Height = 300 },
                     new StorageUnit { Id = 4, RoomId = 2, Name = "Shelf", Type = Enums.StorageUnitType.Shelf, PositionX = 300, PositionY = 50, Width = 100, Height = 200 }
+                );
+                context.SaveChanges();
+            }
+            if(!context.Set<Item>().Any())
+            {
+                context.Set<Item>().AddRange(
+                    new Item { Id = 1, StorageUnitId = 1, Name = "Bavul", Description = "Item container", Quantity = 1 },
+                    new Item { Id = 2, StorageUnitId = 1, Name = "Canta", Description = "Item container", Quantity = 1 },
+                    new Item { Id = 3, StorageUnitId = 2, Name = "Ayakkabi", Description = "Item container", Quantity = 2 },
+                    new Item { Id = 4, StorageUnitId = 3, Name = "Sapka", Description = "Item container", Quantity = 1 }
                 );
                 context.SaveChanges();
             }
