@@ -14,4 +14,5 @@ public class ApplicationDbContext : DbContext
     public DbSet<Home> Homes => Set<Home>();
     public DbSet<Item> Items => Set<Item>();
     public DbSet<Room> Rooms => Set<Room>();
+    public DbSet<StorageUnit> StorageUnits => Set<StorageUnit>();
 }
